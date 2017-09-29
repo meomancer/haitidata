@@ -82,4 +82,4 @@ EXPOSE 8000
 EXPOSE 8080
 
 WORKDIR /home/web/django_project
-CMD ["uwsgi", "--ini", "/uwsgi.conf"]
+CMD ["uwsgi", "--env", "LC_ALL=en_US.UTF-8", "--ini", "/uwsgi.conf"]

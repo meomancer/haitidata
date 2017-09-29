@@ -56,7 +56,6 @@ services:
       - LC_ALL=en_US.UTF-8
     volumes:
       - ../django_project:/home/web/django_project
-      - ../geonode-2.6.3:/home/web/geonode-2.6.3
       - ./static:/home/web/static:rw
       - ./media:/home/web/media:rw
       - ./reports:/home/web/reports
