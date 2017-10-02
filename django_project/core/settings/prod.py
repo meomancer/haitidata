@@ -97,3 +97,10 @@ if 'raven.contrib.django.raven_compat' in INSTALLED_APPS:
             },
         },
     }
+
+
+PROXY_ALLOWED_HOSTS = (
+    os.environ.get(
+        'PROXY_ALLOWED_HOSTS',
+    )
+)
