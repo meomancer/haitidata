@@ -19,6 +19,7 @@ def clip_layer(request, layername):
     :type layername: basestring
     :return: file size
     """
+
     # PREPARATION
     layer = None
     raster_filepath = None
@@ -51,17 +52,21 @@ def clip_layer(request, layername):
     except OSError as e:
         pass
 
-    # get file for raster
-    if not raster_filepath:
-        file_names = []
-        for layerfile in layer.upload_session.layerfile_set.all():
-            file_names.append(layerfile.file.path)
+    try:
+        # get file for raster
+        if not raster_filepath:
+            file_names = []
+            for layerfile in layer.upload_session.layerfile_set.all():
+                file_names.append(layerfile.file.path)
 
-        for target_file in file_names:
-            if '.tif' in target_file:
-                raster_filepath = target_file
-                extention = 'tif'
-                break
+            for target_file in file_names:
+                if '.tif' in target_file:
+                    raster_filepath = target_file
+                    extention = 'tif'
+                    break
+    except AttributeError:
+        raise Http404('Project can not be clipped or masked.')
+
 
     # get temp filename for output
     filename = os.path.basename(raster_filepath)
