@@ -41,6 +41,12 @@ def clip_layer(request, layername):
     params = {
         param.upper(): value for param, value in query.iteritems()}
     bbox_string = params.get('BBOX', '')
+    bboxArray = bbox_string.split(',')
+    southwest_lat = bboxArray[1]
+    bboxArray[1] = bboxArray[3]
+    bboxArray[3] = southwest_lat
+
+    bbox_string = ','.join(bboxArray)
     geojson = params.get('GEOJSON', '')
     current_date = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
 
@@ -66,7 +72,6 @@ def clip_layer(request, layername):
                     break
     except AttributeError:
         raise Http404('Project can not be clipped or masked.')
-
 
     # get temp filename for output
     filename = os.path.basename(raster_filepath)

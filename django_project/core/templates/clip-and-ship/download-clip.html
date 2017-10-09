@@ -83,8 +83,6 @@
 
             editableLayers.addLayer(layer);
         });
-
-
     });
 
 
@@ -102,7 +100,7 @@
 
     function download_clip_wcs(clipUrl, geometry_url) {
         var layer_name = clipUrl.replace('/clip/', '');
-        var ship_url = '{{ GEOSERVER_BASE_URL }}/wcs?filename={{ resource.name }}.tif&request=getcoverage&version=1.0.0&service=wcs&coverage=' + layer_name + '&CRS=EPSG:4326&format=geotiff&resx=0.5&resy=0.5' + geometry_url
+        var ship_url = '{{ GEOSERVER_BASE_URL }}/wcs?filename={{ resource.name }}.tif&request=getcoverage&version=1.0.0&service=wcs&coverage=' + layer_name + '&CRS=EPSG:4326&format=geotiff&resx=0.5&resy=0.5' + geometry_url;
         window.open(ship_url);
     }
 
@@ -151,9 +149,6 @@
         if (mapToClip) {
             var bboxString = mapToClip.getBounds().toBBoxString();
             var bboxArray = bboxString.split(',');
-            var southwest_lat = bboxArray[1];
-            bboxArray[1] = bboxArray[3];
-            bboxArray[3] = southwest_lat;
             download_clip_layer(clipUrl, '&BBOX=' + bboxArray.toString());
         }
     });
