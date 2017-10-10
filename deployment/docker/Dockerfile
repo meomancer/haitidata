@@ -46,7 +46,8 @@ RUN pip install -r /requirements-haitidata.txt
 RUN apt-get -y --force-yes install gettext
 
 RUN apt-get install gdal-bin
+# Open port 8080 as we will be running our uwsgi socket on that
 
-EXPOSE 8000
+EXPOSE 8080
 WORKDIR /home/web/django_project
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
