@@ -1,3 +1,10 @@
+DATABASE_NAME := gis
+DATABASE_GEONODE_NAME := geonode_data
+make-database:
+	docker-compose exec postgres su - postgres -c "dropdb --if-exists $(DATABASE_NAME)"
+	docker-compose exec postgres su - postgres -c "dropdb --if-exists $(DATABASE_GEONODE_NAME)"
+	docker-compose exec postgres su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_NAME)"
+	docker-compose exec postgres su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_GEONODE_NAME)"
 up:
 	# bring up the services
 	docker-compose up -d

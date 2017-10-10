@@ -1,23 +1,33 @@
-version: '2'
+version: '2.2'
 services:
 
   postgres:
+    # Note you cannot scale if you use conteiner_name
     container_name: haitidata-postgres
-    image: postgres
+    image: kartoza/postgis:9.4-2.1
     volumes:
       - ./deployment/pg/postgres_data:/var/lib/postgresql
+    environment:
+      - USERNAME=docker
+      - PASS=docker
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+    restart: on-failure
+    network_mode: "bridge"
 
   elasticsearch:
     container_name: haitidata-elasticsearch
     image: elasticsearch
+    network_mode: "bridge"
 
   rabbitmq:
     container_name: haitidata-rabbitmq
     image: rabbitmq
+    network_mode: "bridge"
 
   django:
     container_name: haitidata-django
-    build: ./Dockerfile
+    build: ./deployment/docker
     links:
       - postgres
       - elasticsearch
@@ -26,8 +36,25 @@ services:
     volumes:
       - ./django_project:/home/web/django_project
       - ./deployment/logs:/var/log/
-    env_file:
-      - ./deployment/env/production/django.env
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      - DATABASE_NAME=gis
+      - DATABASE_USERNAME=docker
+      - DATABASE_PASSWORD=docker
+      - DATABASE_HOST=postgres
+      - RABBITMQ_HOST=rabbitmq
+      - DJANGO_SETTINGS_MODULE=core.settings.prod_docker
+      - VIRTUAL_HOST=haitidata.com
+      - VIRTUAL_PORT=8080
+      - PROXY_ALLOWED_HOSTS=192.168.1.6
+
+      # Ensure to change these based on server domain
+      - SITEURL=http://192.168.1.6/  # change this to ip or domain location
+      - GEOSERVER_BASE_URL=http://192.168.1.6:8080/geoserver/ # change this to ip or domain geoserver
+      # Set your locale - you need to ensure this is created in Dockerfile too...
+      - LC_ALL=en_US.UTF-8
+    restart: always
+    network_mode: "bridge"
 
   celery:
     container_name: haitidata-celery
@@ -39,26 +66,36 @@ services:
     command: celery worker --app=geonode.celery_app:app -B -l INFO
     env_file:
       - ./deployment/env/production/django.env
+    network_mode: "bridge"
 
   geoserver:
     container_name: haitidata-geoserver
-    build: deployment/docker-geoserver
+    build: ./deployment/docker-geoserver
     links:
       - postgres
     ports:
       - "8080:8080"
     volumes_from:
       - data_dir_conf
-    env_file:
-      - ./deployment/env/production/geoserver.env
+    environment:
+      - DOCKER_HOST
+      - PUBLIC_PORT=80
+      - DOCKER_HOST_IP
+      - DJANGO_URL=http://django:8000/
+      - SITEURL=http://192.168.1.6/
+      - GEOSERVER_BASE_URL=http://192.168.1.6:8080/geoserver/
+      - GEOSERVER_PUBLIC_LOCATION=http://192.168.1.6:8080/geoserver/
+    network_mode: "bridge"
 
   geonode:
     container_name: haitidata-geonode
     image: geonode/nginx:geoserver
     links:
       - django
+      - geoserver
     ports:
       - "80:80"
+    network_mode: "bridge"
 
   data_dir_conf:
     container_name: haitidata-data
@@ -67,6 +104,7 @@ services:
     command: /bin/true
     volumes:
       - /geoserver_data/data
+    network_mode: "bridge"
 
 volumes:
 
