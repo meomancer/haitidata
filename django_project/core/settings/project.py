@@ -3,6 +3,15 @@
 from .base import *
 from django.utils.translation import ugettext_lazy as _
 
+DATABASES['datastore'] = {
+    'ENGINE': 'django.contrib.gis.db.backends.postgis',
+    'NAME': 'geonode_data',
+    'USER': 'postgres',
+    'PASSWORD': 'postgres',
+    'HOST': 'postgres',
+    'PORT': '5432',
+}
+
 PROJECTION_DIRECTORY = '/tmp/'
 GEOSERVER_LOCATION = 'http://geoserver:8080/geoserver/'  # no need to change this
 GEOSERVER_PUBLIC_LOCATION = os.environ.get(
