@@ -30,7 +30,7 @@ PROJECTION_DIRECTORY = '/tmp/'
 GEOSERVER_LOCATION = 'http://geoserver:8080/geoserver/'  # no need to change this
 GEOSERVER_PUBLIC_LOCATION = os.environ.get(
     'GEOSERVER_PUBLIC_LOCATION',
-    os.environ.get('SITEURL') + 'api/geoserver/'
+    os.environ.get('SITEURL') + 'geoserver/'
 )
 
 # dynamic setting based on domain

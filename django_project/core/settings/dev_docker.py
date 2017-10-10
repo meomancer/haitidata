@@ -14,19 +14,19 @@ from .dev import *  # noqa
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'geonode',
-        'USER': 'geonode',
-        'PASSWORD': 'geonode',
-        'HOST': 'postgis',
+        'NAME': 'gis',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': 'postgres',
         'PORT': '5432',
     },
     # vector datastore for uploads
     'datastore': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'geonode_data',
-        'USER': 'geonode',
-        'PASSWORD': 'geonode',
-        'HOST': 'postgis',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }
