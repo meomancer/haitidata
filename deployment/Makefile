@@ -121,7 +121,7 @@ reload:
 	@echo "Reload django project in production mode"
 	@echo "------------------------------------------------------------------"
 	# no -it flag so we can run over remote shell
-	@docker exec $(PROJECT_ID)-uwsgi uwsgi --reload  /tmp/django.pid
+	@docker exec $(PROJECT_ID)-django uwsgi --reload  /tmp/django.pid
 
 kill:
 	@echo
