@@ -11,7 +11,7 @@ DATABASES = {
         'NAME': 'gis',
         'USER': 'docker',
         'PASSWORD': 'docker',
-        'HOST': 'postgis',
+        'HOST': 'postgres',
         'PORT': 5432,
         'TEST_NAME': 'unittests',
     },
@@ -20,7 +20,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'geonode_data',
         'USER': 'docker',
-        'PASSWORD': 'docker',
+        'PASSWORD': 'postgres',
         'HOST': 'postgis',
         'PORT': 5432,
     }
