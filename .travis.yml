@@ -1,0 +1,50 @@
+language: python
+
+python:
+  - "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+branches:
+  only:
+    - master
+    - 2.6.x
+
+dist: precise
+
+install:
+  - sudo apt-get -qq -y update
+  - sudo apt-get install -y libgdal1h libgdal-dev python-gdal gdal-bin
+  - sudo apt-get install -y python-virtualenv python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-httplib2 gettext
+  - sudo add-apt-repository -y ppa:webupd8team/java
+  - sudo apt-get update
+  - sudo apt-get install -y --force-yes oracle-java8-installer --no-install-recommends
+  - sudo update-java-alternatives --set java-8-oracle
+  - pip install -r requirements.txt
+  - pip install -e . --no-deps
+  - pip install coveralls
+  - pip install pygdal==`gdal-config --version`
+
+before_script:
+  - paver setup
+
+script:
+  - paver run_tests --coverage
+
+after_script:
+  - paver reset_hard
+
+after_success:
+  - coveralls
+
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#geonode"
+    use_notice: true
+  email:
+    - geonode-dev@boundlessgeo.com
+    - ingenieroariel@gmail.com
+    - simone.dalmasso@gmail.com
+  slack: geonode-sprint:oQylJRkU9feZ8JruGi6czWwe

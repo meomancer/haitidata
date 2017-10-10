@@ -12,7 +12,7 @@ TIME_ZONE = 'Africa/Johannesburg'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en_US.UTF-8'
+LANGUAGE_CODE = 'en_US'
 
 SITE_ID = 1
 
@@ -59,6 +59,8 @@ STATICFILES_DIRS += (
     absolute_path('core', 'base_static'),
     absolute_path('core', 'geonode_static'),
 )
+
+CLIPPED_DIRECTORY = absolute_path('base', 'clipped_geotiff')
 
 # Additional locations of static files
 
@@ -108,6 +110,7 @@ TEMPLATES = [
                 'geonode.context_processors.resource_urls',
                 "geonode.geoserver.context_processors.geoserver_urls",
                 "core.context_processors.project_setting.project_setting",
+                "core.context_processors.clipped_geotiff.clipped_geotiff",
             ],
         },
     },

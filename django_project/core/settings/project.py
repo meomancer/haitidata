@@ -68,8 +68,6 @@ LOCALE_PATHS += (
     absolute_path('locale'),
 )
 
-DATABASES = {}
-
 # default login url
 LOGIN_URL = '/account/login/'
 

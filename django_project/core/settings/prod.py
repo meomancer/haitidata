@@ -17,7 +17,7 @@ ALLOWED_HOSTS = [
 USE_X_FORWARDED_HOST = True
 
 # Set debug to false for production
-DEBUG = TEMPLATE_DEBUG = False
+DEBUG = TEMPLATE_DEBUG = True
 TESTING = DEBUG
 
 SERVER_EMAIL = 'tim@kartoza.com'
@@ -98,9 +98,8 @@ if 'raven.contrib.django.raven_compat' in INSTALLED_APPS:
         },
     }
 
-
 PROXY_ALLOWED_HOSTS = (
     os.environ.get(
-        'PROXY_ALLOWED_HOSTS',
-    )
+        'PROXY_ALLOWED_HOSTS', '*'
+    ),
 )

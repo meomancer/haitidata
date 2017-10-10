@@ -7,6 +7,8 @@ import zipfile
 import subprocess
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.generic.detail import View
 from geonode.layers.views import _resolve_layer, _PERMISSION_MSG_VIEW
 
 
@@ -18,11 +20,21 @@ def clip_layer(request, layername):
     :return: file size
     """
     # PREPARATION
-    layer = _resolve_layer(
-        request,
-        layername,
-        'base.view_resourcebase',
-        _PERMISSION_MSG_VIEW)
+    layer = None
+    raster_filepath = None
+    extention = ''
+    try:
+        layer = _resolve_layer(
+            request,
+            layername,
+            'base.view_resourcebase',
+            _PERMISSION_MSG_VIEW)
+    except Http404 as e:
+        layername = layername.replace('geonode:', '')
+        raster_filepath = os.path.join(settings.CLIPPED_DIRECTORY, '%s.geotiff' % layername)
+        extention = 'geotiff'
+        if not os.path.exists(raster_filepath):
+            raise e
 
     query = request.GET or request.POST
     params = {
@@ -40,18 +52,16 @@ def clip_layer(request, layername):
         pass
 
     # get file for raster
-    raster_filepath = None
-    extention = ''
+    if not raster_filepath:
+        file_names = []
+        for layerfile in layer.upload_session.layerfile_set.all():
+            file_names.append(layerfile.file.path)
 
-    file_names = []
-    for layerfile in layer.upload_session.layerfile_set.all():
-        file_names.append(layerfile.file.path)
-
-    for target_file in file_names:
-        if '.tif' in target_file:
-            raster_filepath = target_file
-            extention = 'tif'
-            break
+        for target_file in file_names:
+            if '.tif' in target_file:
+                raster_filepath = target_file
+                extention = 'tif'
+                break
 
     # get temp filename for output
     filename = os.path.basename(raster_filepath)
@@ -107,9 +117,10 @@ def clip_layer(request, layername):
         clipped_size = os.path.getsize(output)
 
         if float(clipped_size) > float(max_clip_size):
+            max_clip_size_mb = int(max_clip_size) / 1000000
             response = JsonResponse({
                 'error': 'Clipped file size is '
-                         'bigger than ' + max_clip_size + ' bytes'
+                         'bigger than ' + str(max_clip_size_mb) + ' mb'
             })
             response.status_code = 403
             return response
@@ -134,11 +145,20 @@ def download_clip(request, layername, clip_filename):
     :return: The HTTPResponse with a file.
     """
     # PREPARATION
-    layer = _resolve_layer(
-        request,
-        layername,
-        'base.view_resourcebase',
-        _PERMISSION_MSG_VIEW)
+    layer = None
+    extention = ''
+    try:
+        layer = _resolve_layer(
+            request,
+            layername,
+            'base.view_resourcebase',
+            _PERMISSION_MSG_VIEW)
+    except Http404 as e:
+        layername = layername.replace('geonode:', '')
+        raster_filepath = os.path.join(settings.CLIPPED_DIRECTORY, '%s.geotiff' % layername)
+        extention = 'geotiff'
+        if not os.path.exists(raster_filepath):
+            raise e
 
     query = request.GET or request.POST
     params = {
@@ -153,22 +173,15 @@ def download_clip(request, layername, clip_filename):
     except OSError as e:
         pass
 
-    # get file for raster
-    raster_filepath = None
-    extention = ''
-
     file_names = []
-    for layerfile in layer.upload_session.layerfile_set.all():
-        file_names.append(layerfile.file.path)
+    if layer:
+        for layerfile in layer.upload_session.layerfile_set.all():
+            file_names.append(layerfile.file.path)
 
-    for target_file in file_names:
-        if '.tif' in target_file:
-            raster_filepath = target_file
-            extention = 'tif'
-            break
-
-    # get temp filename for output
-    filename = os.path.basename(raster_filepath)
+        for target_file in file_names:
+            if '.tif' in target_file:
+                target_filename, extention = os.path.splitext(target_file)
+                break
 
     output = os.path.join(
         temporary_folder,
@@ -180,7 +193,7 @@ def download_clip(request, layername, clip_filename):
         s = StringIO.StringIO()
         zf = zipfile.ZipFile(s, "w")
 
-        zip_subdir = layer.name + '_clipped'
+        zip_subdir = layername + '_clipped'
         zip_filename = "%s.zip" % zip_subdir
 
         files_to_zipped = []
@@ -210,3 +223,20 @@ def download_clip(request, layername, clip_filename):
         return resp
     else:
         raise Http404('Project can not be clipped or masked.')
+
+
+class ClipVIew(View):
+    template_name = 'clip-and-ship/clip-page.html'
+
+    def get(self, request, geotiffname):
+        context = {
+            'geotiffname': geotiffname,
+            'resource': {
+                'get_tiles_url': "%sgwc/service/gmaps?layers=geonode:%s&zoom={z}&x={x}&y={y}&format=image/png8" % (
+                    settings.GEOSERVER_PUBLIC_LOCATION,
+                    geotiffname
+                ),
+                'service_typename': 'geonode:%s' % geotiffname
+            }
+        }
+        return render(request, self.template_name, context)
