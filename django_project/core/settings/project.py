@@ -3,32 +3,11 @@
 from .base import *
 from django.utils.translation import ugettext_lazy as _
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USERNAME'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': 5432,
-        'TEST_NAME': 'unittests',
-    },
-    # vector datastore for uploads
-    'datastore': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'geonode_data',
-        'USER': os.environ['DATABASE_USERNAME'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': 5432,
-    }
-}
-
 PROJECTION_DIRECTORY = '/tmp/'
 GEOSERVER_LOCATION = 'http://geoserver:8080/geoserver/'  # no need to change this
 GEOSERVER_PUBLIC_LOCATION = os.environ.get(
     'GEOSERVER_PUBLIC_LOCATION',
-    os.environ.get('SITEURL') + 'api/geoserver/'
+    os.environ.get('SITEURL') + 'geoserver/'
 )
 
 # dynamic setting based on domain
