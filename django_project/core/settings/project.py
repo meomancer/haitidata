@@ -3,13 +3,27 @@
 from .base import *
 from django.utils.translation import ugettext_lazy as _
 
-DATABASES['datastore'] = {
-    'ENGINE': 'django.contrib.gis.db.backends.postgis',
-    'NAME': 'geonode_data',
-    'USER': 'postgres',
-    'PASSWORD': 'postgres',
-    'HOST': 'postgres',
-    'PORT': '5432',
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'gis',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': 'postgis',
+        'PORT': 5432,
+        'TEST_NAME': 'unittests',
+    },
+    # vector datastore for uploads
+    'datastore': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'geonode_data',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': 'postgis',
+        'PORT': 5432,
+    }
 }
 
 PROJECTION_DIRECTORY = '/tmp/'

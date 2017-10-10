@@ -2,10 +2,18 @@ version: '2'
 services:
 
   postgres:
+    # Note you cannot scale if you use conteiner_name
     container_name: haitidata-postgres
-    image: postgres
+    image: kartoza/postgis:9.4-2.1
     volumes:
-      - ./deployment/pg/postgres_data:/var/lib/postgresql
+      - ./pg/postgres_data:/var/lib/postgresql
+      - ./backups:/backups
+      - ./fresh-backups:/fresh-backups
+    environment:
+      - USERNAME=docker
+      - PASS=docker
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
 
   elasticsearch:
     container_name: haitidata-elasticsearch
