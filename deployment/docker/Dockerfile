@@ -39,6 +39,8 @@ RUN cd /home/web/gdal-$GDAL_VERSION && ./configure -prefix=/usr/ && make && make
 COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
 
+RUN pip install uwsgi
+
 COPY requirements-haitidata.txt /requirements-haitidata.txt
 RUN pip install -r /requirements-haitidata.txt
 
@@ -50,4 +52,4 @@ RUN apt-get install gdal-bin
 
 EXPOSE 8080
 WORKDIR /home/web/django_project
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["uwsgi", "--env", "LC_ALL=en_US.UTF-8", "--ini", "/uwsgi.conf"]

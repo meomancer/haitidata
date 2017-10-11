@@ -48,11 +48,11 @@ services:
       - DJANGO_SETTINGS_MODULE=core.settings.prod_docker
       - VIRTUAL_HOST=haitidata.com
       - VIRTUAL_PORT=8080
-      - PROXY_ALLOWED_HOSTS=192.168.1.6
+      - PROXY_ALLOWED_HOSTS=110.0.0.3
 
       # Ensure to change these based on server domain
-      - SITEURL=http://192.168.1.6/  # change this to ip or domain location
-      - GEOSERVER_BASE_URL=http://192.168.1.6:8080/geoserver/ # change this to ip or domain geoserver
+      - SITEURL=http://10.0.0.3/  # change this to ip or domain location
+      - GEOSERVER_BASE_URL=http://10.0.0.3:8080/geoserver/ # change this to ip or domain geoserver
       # Set your locale - you need to ensure this is created in Dockerfile too...
       - LC_ALL=en_US.UTF-8
     restart: always
@@ -129,18 +129,28 @@ services:
       - PUBLIC_PORT=80
       - DOCKER_HOST_IP
       - DJANGO_URL=http://django:8000/
-      - SITEURL=http://192.168.1.6/
-      - GEOSERVER_BASE_URL=http://192.168.1.6:8080/geoserver/
+      - SITEURL=http://10.0.0.3/
+      - GEOSERVER_BASE_URL=http://10.0.0.3:8080/geoserver/
     network_mode: "bridge"
 
   geonode:
+    # Note you cannot scale if you use conteiner_name
     container_name: haitidata-geonode
-    image: geonode/nginx:geoserver
+    image: nginx
+    hostname: nginx
+    volumes:
+      - ./sites-enabled:/etc/nginx/conf.d:ro
+      # I dont use volumes_from as I want to use the ro modifier
+      - ./static:/home/web/static:ro
+      - ./media:/home/web/media:ro
+      - ./logs:/var/log/nginx
+      # - /etc/letsencrypt:/etc/letsencrypt
+      - ./webroot-path:/home/web/webroot-path
     links:
       - django
       - geoserver
     ports:
-      - "80:80"
+      - "33300:8080"
     restart: always
     network_mode: "bridge"
 
