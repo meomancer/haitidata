@@ -17,10 +17,10 @@ fresh-web: build permissions web upload-fixtures
 
 # Use this for fresh build (it will restore with empty stable database)
 fresh-deploy: fresh-web
-	@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "dropdb --if-exists $(DATABASE_NAME)"
-	@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "dropdb --if-exists $(DATABASE_GEONODE_NAME)"
-	@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_NAME)"
-	@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_GEONODE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "dropdb --if-exists $(DATABASE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "dropdb --if-exists $(DATABASE_GEONODE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "createdb -O docker -T template_postgis $(DATABASE_GEONODE_NAME)"
 
 
 default: web
@@ -69,7 +69,7 @@ db:
 	@echo "------------------------------------------------------------------"
 	@echo "Running db in production mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) up -d postgres
+	@docker-compose -p $(PROJECT_ID) up -d postgis
 
 nginx:
 	@echo
@@ -187,16 +187,16 @@ dbbash:
 	@echo "------------------------------------------------------------------"
 	@echo "Bashing in to production database"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash
+	@docker exec -t -i $(PROJECT_ID)-postgis /bin/bash
 
 dbsnapshot:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Grab a quick snapshot of the database and place in the host filesystem"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash -c "PGPASSWORD=docker pg_dump -Fc -h localhost -U docker -f /tmp/$(PROJECT_ID)-snapshot.dmp $(DATABASE_NAME)"
-	@docker cp $(PROJECT_ID)-postgres:/tmp/$(PROJECT_ID)-snapshot.dmp .
-	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash -c "rm /tmp/$(PROJECT_ID)-snapshot.dmp"
+	@docker exec -t -i $(PROJECT_ID)-postgis /bin/bash -c "PGPASSWORD=docker pg_dump -Fc -h localhost -U docker -f /tmp/$(PROJECT_ID)-snapshot.dmp $(DATABASE_NAME)"
+	@docker cp $(PROJECT_ID)-postgis:/tmp/$(PROJECT_ID)-snapshot.dmp .
+	@docker exec -t -i $(PROJECT_ID)-postgis /bin/bash -c "rm /tmp/$(PROJECT_ID)-snapshot.dmp"
 	@ls -lahtr *.dmp 
 
 dbschema:
@@ -204,21 +204,21 @@ dbschema:
 	@echo "------------------------------------------------------------------"
 	@echo "Print the database schema to stdio"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash -c "PGPASSWORD=docker pg_dump -s -h localhost -U docker $(DATABASE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis /bin/bash -c "PGPASSWORD=docker pg_dump -s -h localhost -U docker $(DATABASE_NAME)"
 
 dbshell:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Shelling in in production database"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)-postgres psql -U docker -h localhost $(DATABASE_NAME)
+	@docker exec -t -i $(PROJECT_ID)-postgis psql -U docker -h localhost $(DATABASE_NAME)
 
 dbshell-geonode-data:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Shelling in in production database"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)-postgres psql -U docker -h localhost $(DATABASE_GEONODE_NAME)
+	@docker exec -t -i $(PROJECT_ID)-postgis psql -U docker -h localhost $(DATABASE_GEONODE_NAME)
 
 dbrestore:
 	@echo
@@ -226,9 +226,9 @@ dbrestore:
 	@echo "Restore dump from backups/latest.dmp in production mode"
 	@echo "------------------------------------------------------------------"
 	@# - prefix causes command to continue even if it fails
-	-@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "dropdb $(DATABASE_NAME)"
-	@docker exec -t -i $(PROJECT_ID)-postgres su - postgres -c "createdb -O docker -T template_postgres $(DATABASE_NAME)"
-	@docker exec -t -i $(PROJECT_ID)-postgres pg_restore /backups/latest.dmp | docker exec -i $(PROJECT_ID)-postgres su - postgres -c "psql $(DATABASE_NAME)"
+	-@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "dropdb $(DATABASE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis su - postgres -c "createdb -O docker -T template_postgres $(DATABASE_NAME)"
+	@docker exec -t -i $(PROJECT_ID)-postgis pg_restore /backups/latest.dmp | docker exec -i $(PROJECT_ID)-postgis su - postgres -c "psql $(DATABASE_NAME)"
 
 dbbackup:
 	@echo
@@ -239,8 +239,8 @@ dbbackup:
 	@echo "------------------------------------------------------------------"
 	@# - prefix causes command to continue even if it fails
 	@# Explicitly don't use -it so we can call this make target over a remote ssh session
-	@docker exec $(PROJECT_ID)-postgres-backups /backups.sh
-	@docker exec $(PROJECT_ID)-postgres-backups cat /var/log/cron.log | tail -2 | head -1 | awk '{print $4}'
+	@docker exec $(PROJECT_ID)-postgis-backups /backups.sh
+	@docker exec $(PROJECT_ID)-postgis-backups cat /var/log/cron.log | tail -2 | head -1 | awk '{print $4}'
 	-@if [ -f "backups/latest.dmp" ]; then rm backups/latest.dmp; fi
 	# backups is intentionally missing from front of first clause below otherwise symlink comes
 	# out with wrong path...

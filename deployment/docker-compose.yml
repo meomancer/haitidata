@@ -1,9 +1,9 @@
 version: '2.2'
 services:
 
-  postgres:
+  postgis:
     # Note you cannot scale if you use conteiner_name
-    container_name: haitidata-postgres
+    container_name: haitidata-postgis
     image: kartoza/postgis:9.4-2.1
     volumes:
       - ./pg/postgres_data:/var/lib/postgresql
@@ -15,23 +15,11 @@ services:
     restart: on-failure
     network_mode: "bridge"
 
-  elasticsearch:
-    container_name: haitidata-elasticsearch
-    image: elasticsearch
-    network_mode: "bridge"
-
-  rabbitmq:
-    container_name: haitidata-rabbitmq
-    image: rabbitmq
-    network_mode: "bridge"
-
   django:
     container_name: haitidata-django
     build: ./docker
     links:
-      - postgres
-      - elasticsearch
-      - rabbitmq
+      - postgis
       - geoserver
     volumes:
       - ../django_project:/home/web/django_project
@@ -39,11 +27,11 @@ services:
       - ./media:/home/web/media
       - ./logs:/var/log/
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      - DATABASE_URL=postgres://docker:docker@postgis:5432/gis
       - DATABASE_NAME=gis
       - DATABASE_USERNAME=docker
       - DATABASE_PASSWORD=docker
-      - DATABASE_HOST=postgres
+      - DATABASE_HOST=postgis
       - RABBITMQ_HOST=rabbitmq
       - DJANGO_SETTINGS_MODULE=core.settings.prod_docker
       - VIRTUAL_HOST=haitidata.com
@@ -77,9 +65,7 @@ services:
       - ./reports:/home/web/reports
       - ./logs:/var/log/
     links:
-      - postgres
-      - elasticsearch
-      - rabbitmq
+      - postgis
       - geoserver
     ports:
       # for django test server
@@ -88,38 +74,11 @@ services:
       - "33302:22"
     network_mode: "bridge"
 
-  celery:
-    container_name: haitidata-celery
-    image: geonode/django
-    links:
-      - rabbitmq
-      - postgres
-      - elasticsearch
-    command: celery worker --app=geonode.celery_app:app -B -l INFO
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
-      - DATABASE_NAME=gis
-      - DATABASE_USERNAME=docker
-      - DATABASE_PASSWORD=docker
-      - DATABASE_HOST=postgres
-      - RABBITMQ_HOST=rabbitmq
-      - DJANGO_SETTINGS_MODULE=core.settings.prod_docker
-      - VIRTUAL_HOST=haitidata.com
-      - VIRTUAL_PORT=8080
-      - PROXY_ALLOWED_HOSTS=192.168.1.6
-
-      # Ensure to change these based on server domain
-      - SITEURL=http://192.168.1.6:33300/  # change this to ip or domain location
-      - GEOSERVER_BASE_URL=http://192.168.1.6:33308/geoserver/ # change this to ip or domain geoserver
-      # Set your locale - you need to ensure this is created in Dockerfile too...
-      - LC_ALL=en_US.UTF-8
-    network_mode: "bridge"
-
   geoserver:
     container_name: haitidata-geoserver
     build: ./docker-geoserver
     links:
-      - postgres
+      - postgis
     ports:
       - "33308:8080"
     volumes_from:
