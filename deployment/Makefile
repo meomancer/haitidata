@@ -32,6 +32,7 @@ deploy: run
 	@echo "Bringing up fresh instance "
 	@echo "You can access it on http://localhost:63300"
 	@echo "------------------------------------------------------------------"
+	docker-compose -p $(PROJECT_ID) up --no-recreate -d geoserver2
 
 build:
 	@echo
@@ -197,7 +198,7 @@ dbsnapshot:
 	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash -c "PGPASSWORD=docker pg_dump -Fc -h localhost -U docker -f /tmp/$(PROJECT_ID)-snapshot.dmp $(DATABASE_NAME)"
 	@docker cp $(PROJECT_ID)-postgres:/tmp/$(PROJECT_ID)-snapshot.dmp .
 	@docker exec -t -i $(PROJECT_ID)-postgres /bin/bash -c "rm /tmp/$(PROJECT_ID)-snapshot.dmp"
-	@ls -lahtr *.dmp 
+	@ls -lahtr *.dmp
 
 dbschema:
 	@echo
