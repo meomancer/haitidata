@@ -19,7 +19,7 @@ WCS_URL = settings.GEOSERVER_BASE_URL + \
           'height={height}'
 
 MAX_CLIP_SIZE = settings.MAXIMUM_CLIP_SIZE
-SIZE_SAMPLE = 100
+TILE_SAMPLE_SIZE = 100  # tile sample size will be 100*100
 
 
 def check_file_size(clipped_size):
@@ -141,23 +141,25 @@ def clip_layer(request, layername):
         # 2. get the filesize
         # 3. times filesize by width/10 * height/10, as assumption for actual filesize
         # -------------------------------------------------
-        width_sample = int(width / SIZE_SAMPLE)
-        height_sample = int(height / SIZE_SAMPLE)
+        number_tile_in_width = int(width / TILE_SAMPLE_SIZE)
+        number_tile_in_height = int(height / TILE_SAMPLE_SIZE)
 
         sample_filepath = os.path.join(
             temporary_folder,
             layer.title + '.sample.' + extention)
         download_wcs(
             layername, bbox_string,
-            SIZE_SAMPLE,
-            SIZE_SAMPLE,
+            TILE_SAMPLE_SIZE,
+            TILE_SAMPLE_SIZE,
             sample_filepath)
 
-        clipped_size = os.path.getsize(sample_filepath)
+        expected_clip_size = os.path.getsize(sample_filepath)
         # size of 10x10 times width_sample * height_sample
-        clipped_size = clipped_size * (width_sample * height_sample)
+        expected_clip_size = expected_clip_size * (
+            number_tile_in_width * number_tile_in_height
+        )
 
-        if not check_file_size(clipped_size):
+        if not check_file_size(expected_clip_size):
             response = JsonResponse({
                 'error': 'Clipped file size is '
                          'bigger than %s mb' % (
