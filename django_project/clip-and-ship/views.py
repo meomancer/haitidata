@@ -19,7 +19,7 @@ WCS_URL = settings.GEOSERVER_BASE_URL + \
           'height={height}'
 
 MAX_CLIP_SIZE = settings.MAXIMUM_CLIP_SIZE
-SIZE_SAMPLE = 10
+SIZE_SAMPLE = 100
 
 
 def check_file_size(clipped_size):
