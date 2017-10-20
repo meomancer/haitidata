@@ -130,6 +130,9 @@ def clip_layer(request, layername):
         y = float(bbox_array[3]) - float(bbox_array[1])
         height = int(y * 43260) + offset
 
+        width = int(width * settings.WCS_DOWNLOADED_RATIO_SIZE)
+        height = int(height * settings.WCS_DOWNLOADED_RATIO_SIZE)
+
         extention = 'tif'
 
         # checking file size of wcs download
