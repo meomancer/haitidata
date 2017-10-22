@@ -63,6 +63,7 @@ def download_wcs(layername, bbox_string, width, height, raster_filepath):
         height=height
     )
 
+    raise Http404('%s' % wcs_formatted_url)
     response = urllib2.urlopen(wcs_formatted_url)
     fh = open(raster_filepath, "w")
     fh.write(response.read())
