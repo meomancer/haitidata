@@ -77,11 +77,22 @@ def clip_layer(request, layername):
     :return: file size
     """
     # PREPARATION
-    layer = _resolve_layer(
-        request,
-        layername,
-        'base.view_resourcebase',
-        _PERMISSION_MSG_VIEW)
+    try:
+        layer = _resolve_layer(
+            request,
+            layername,
+            'base.view_resourcebase',
+            _PERMISSION_MSG_VIEW)
+    except Http404 as e:
+        response = JsonResponse({
+            'error': '%s. '
+                     'Please do '
+                     '<i>python manage.py updatelayers</i> '
+                     'to retrieve it from geoserver.' % e
+        })
+        response.status_code = 404
+        return response
+
     download_from_wcs = False
 
     query = request.GET or request.POST
